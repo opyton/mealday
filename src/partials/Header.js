@@ -2,8 +2,11 @@ import React from "react";
 import { Nav, Navbar } from "react-bootstrap";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Account from "../Account";
+import ByIngredient from "../ByIngredient";
+import ByNutrient from "../ByNutrient";
+import RandomRecipe from "../RandomRecipe";
 import Home from "../Home";
-import Mealdaylogo from "../Mealday-logo.png";
+import Mealdaylogo from "../images/Mealday-logo.png";
 import styles from "./Styles";
 
 const Header = () => {
@@ -28,6 +31,15 @@ const Header = () => {
         <Switch>
           <Route path="/account">
             <Account />
+          </Route>
+          <Route path="/recipe-by-ingredient">
+            <ByIngredient />
+          </Route>
+          <Route path="/recipe-by-nutrient">
+            <ByNutrient />
+          </Route>
+          <Route path="/random-recipe">
+            <RandomRecipe />
           </Route>
           <Route path="/">
             <Home />
