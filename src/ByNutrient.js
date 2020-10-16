@@ -1,106 +1,100 @@
 import React, { useState } from "react";
-import { Formik, Field, Form } from "formik";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Formik, Field, Form, FieldArray } from "formik";
+import { Col, Container, Row } from "react-bootstrap";
 
 const ByNutrient = () => {
   const [nutrients, setNutrients] = useState([]);
-  const [recipes, setRecipes] = useState([]);
+  // const [recipes, setRecipes] = useState([]);
 
-  const filterRecipes = async () => {
-    const recipeList = await new Promise((resolve) => {
-      const recipeCopy = [...recipes];
-      recipeCopy.push("test");
-      resolve(recipeCopy);
-    });
-    setRecipes(recipeList);
-  };
+  // const filterRecipes = async () => {
+  //   const recipeList = await new Promise((resolve) => {
+  //     const recipeCopy = [...recipes];
+  //     recipeCopy.push("test");
+  //     resolve(recipeCopy);
+  //   });
+  //   setRecipes(recipeList);
+  // };
 
+  //will display recipes after retrieve from database
   const displayRecipes = () => {
     return (
       <Col>
-        <Button onClick={filterRecipes} variant="dark">
-          Find By Recipes
-        </Button>
-        {recipes.map((recipe) => (
+        {nutrients.map((nutrients) => (
           <Col>
-            <div>{recipe}</div>
+            <div>{nutrients.qty}</div>
           </Col>
         ))}
       </Col>
     );
   };
 
-  const displaySelectedNutrients = () => {
-    return nutrients.map((nutrient) => (
-      <Row>
-        <Col>{nutrient["QTY"]}</Col>
-        <Col>{nutrient["Type"]}</Col>
-        <Col>{nutrient["Nutrient"]}</Col>
-        <Button
-          variant="light"
-          onClick={() =>
-            setNutrients(
-              nutrients.filter(
-                (remainingNutrients) =>
-                  remainingNutrients["Nutrient"] !== nutrient["Nutrient"]
-              )
-            )
-          }
-        >
-          X
-        </Button>
-      </Row>
-    ));
-  };
-
-  const uniqueNutrient = (values) => {
-    for (let x in nutrients) {
-      if (nutrients[x]["Nutrient"] === values["Nutrient"]) return true;
-    }
-    return false;
-  };
-
   const nutrientsForm = () => {
     return (
-      <Formik
-        initialValues={{
-          QTY: "",
-          Type: "grams",
-          Nutrient: "",
-        }}
-        onSubmit={async (values) => {
-          const newNutrients = await new Promise((resolve) => {
-            if (uniqueNutrient(values)) alert("Please enter a unique nutrient");
-            else if (values.Nutrient.length < 1)
-              alert("Please enter a nutrient");
-            else {
-              const val = [...nutrients];
-              val.push(values);
-              resolve(val);
-            }
-          });
-          // alert(JSON.stringify(values, null, 2));
-          setNutrients(newNutrients);
-          console.log(newNutrients);
-        }}
-      >
-        <Form
-        // onChange={(e) =>
-        //   e.target["name"] === "Nutrient" ? console.log(e.target.value) : null
-        // }
-        >
-          <label htmlFor="QTY">QTY</label>
-          <Field id="QTY" name="QTY" placeholder="" type="number" />
-          <label htmlFor="Type">Type</label>
-          <Field as="select" id="Type" name="Type">
-            <option value="grams">grams</option>
-            <option value="oz">oz</option>
-          </Field>
-          <label htmlFor="Nutrient">Nutrient</label>
-          <Field id="Nutrient" name="Nutrient" placeholder="" />
-          <button type="submit">Add</button>
-        </Form>
-      </Formik>
+      <>
+        <Formik
+          initialValues={{
+            nutrients: [{ qty: "", type: "grams", nutrient: "" }],
+          }}
+          onSubmit={(values) => {
+            setNutrients(values.nutrients);
+            console.log(values.nutrients);
+          }}
+          render={({ values }) => (
+            <Form>
+              <FieldArray
+                name="nutrients"
+                render={(arrayHelpers) => (
+                  <div>
+                    {values.nutrients.map((nutrient, index) => (
+                      <div key={index}>
+                        <Field type="number" name={`nutrients[${index}].qty`} />
+                        <Field as="select" name={`nutrients.${index}.type`}>
+                          <option value="grams">grams</option>
+                          <option value="oz">oz</option>
+                        </Field>
+                        <Field
+                          onClick={() =>
+                            values.nutrients[index].nutrient.length > 3 &&
+                            !values.nutrients[index + 1]
+                              ? arrayHelpers.push({
+                                  qty: "",
+                                  type: "grams",
+                                  nutrient: "",
+                                })
+                              : null
+                          }
+                          type="text"
+                          name={`nutrients.${index}.nutrient`}
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => arrayHelpers.remove(index)}
+                        >
+                          X
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        arrayHelpers.push({
+                          qty: "",
+                          type: "grams",
+                          nutrient: "",
+                        })
+                      }
+                    >
+                      Add
+                    </button>
+                    <button type="submit">Find My Recipes</button>
+                  </div>
+                )}
+              />
+            </Form>
+          )}
+        />
+      </>
     );
   };
 
@@ -110,11 +104,9 @@ const ByNutrient = () => {
         <Row>
           <Col>{nutrientsForm()}</Col>
           <Col md="auto">
-            <h2>Selected Nutrients</h2>
-            {displaySelectedNutrients()}
+            <Row>{displayRecipes()}</Row>
           </Col>
         </Row>
-        <Row>{displayRecipes()}</Row>
       </Container>
     </>
   );

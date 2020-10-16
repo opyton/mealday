@@ -3,8 +3,8 @@ import { Col, Container, Image, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import IngredientPic from "./images/ByIngredient.jpg";
 import NutrientPic from "./images/ByNutrient.jpg";
-import SurprisePic from "./images/Surprise.jpg";
 import styles from "./partials/Styles";
+import RandomLightBox from "./partials/RandomLightbox";
 
 const Home = () => {
   return (
@@ -32,11 +32,7 @@ const Home = () => {
             </Link>
           </Col>
           <Col xs={6} md={4}>
-            <Link to="/random-recipe">
-              <Image src={SurprisePic} alt="SurpriseMe" thumbnail fluid />
-              <h2 style={styles.setFont}>SURPRISE ME!</h2>
-              <h3 style={styles.setFont}>RECIPE OF THE DAY</h3>
-            </Link>
+            <RandomLightBox />
           </Col>
         </Row>
       </Container>
