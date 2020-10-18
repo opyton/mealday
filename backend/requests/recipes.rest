@@ -1,0 +1,6 @@
+GET http://localhost:5000/recipes/
+Content-Type: application/json
+
+###
+GET http://localhost:5000/recipes/random
+Content-Type: application/json
