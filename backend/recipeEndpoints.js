@@ -9,8 +9,41 @@ const randomRecipe =
   process.env.API_KEY +
   "&number=5";
 
+router.post("/byNutrient", (req, res) => {
+  console.log("in nutrient");
+  _.forEach(req.body, (body) => console.log(body.qty));
+  res.send("in");
+});
+
+router.post("/byIngredient", async (req, res) => {
+  const matchesFilter = (res) => {
+    let found = false;
+    _.forEach(res.extendedIngredients, (ingredient) => {
+      if (_.includes(ingredient.name, "butter")) {
+        found = true;
+      }
+    });
+    return found;
+  };
+  const getFilteredRecipes = () => {
+    let recipes = [];
+    var recipeProm = new Promise((resolve, reject) => {
+      recipeModel.find().exec((err, response) => {
+        _.forEach(response, (response) => {
+          if (matchesFilter(response) && recipes.length < 3) {
+            recipes = _.concat(recipes, response.title);
+          }
+        });
+        resolve();
+      });
+    });
+    recipeProm.then(() => res.send(recipes));
+  };
+  getFilteredRecipes();
+});
+
 router.get("/random", async (req, res) => {
-  //Random Recipe sent
+  //Random Recipe send to frontend
   recipeModel.countDocuments().exec((err, count) => {
     var random = Math.floor(Math.random() * count);
     recipeModel
