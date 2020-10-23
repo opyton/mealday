@@ -16,26 +16,37 @@ router.post("/byNutrient", (req, res) => {
 });
 
 router.post("/byIngredient", async (req, res) => {
+  console.log(req.body);
+
   const matchesFilter = (res) => {
     let found = false;
-    _.forEach(res.extendedIngredients, (ingredient) => {
-      if (_.includes(ingredient.name, "butter")) {
-        found = true;
-      }
-    });
+    try {
+      _.forEach(res.extendedIngredients, (ingredient) => {
+        if (_.includes(ingredient.name, "beef")) {
+          console.log(res.title);
+          found = true;
+        }
+      });
+    } catch (err) {
+      console.log(err);
+      return found;
+    }
     return found;
   };
   const getFilteredRecipes = () => {
     let recipes = [];
     var recipeProm = new Promise((resolve, reject) => {
-      recipeModel.find().exec((err, response) => {
-        _.forEach(response, (response) => {
-          if (matchesFilter(response) && recipes.length < 3) {
-            recipes = _.concat(recipes, response.title);
-          }
+      recipeModel
+        .find()
+        .limit(50)
+        .exec((err, response) => {
+          _.forEach(response, (response) => {
+            if (matchesFilter(response) && recipes.length < 3) {
+              recipes = _.concat(recipes, response);
+            }
+          });
+          resolve();
         });
-        resolve();
-      });
     });
     recipeProm.then(() => res.send(recipes));
   };
@@ -56,20 +67,25 @@ router.get("/random", async (req, res) => {
   });
 
   //Storing data from api
-  const stringifiedEx = await axios
-    .get(randomRecipe)
-    .then((response) => response.data.recipes);
-  for (let n in stringifiedEx) {
-    recipeModel.find({ id: stringifiedEx[n].id }).exec((err, res) => {
-      if (res.length === 0) {
-        let recipe = new recipeModel(stringifiedEx[n]);
-        console.log(recipe.title);
-        recipe.save();
-      } else {
-        console.log("not unique");
-      }
-    });
-  }
+  // const stringifiedEx = await axios
+  //   .get(randomRecipe)
+  //   .then((response) => response.data.recipes);
+  // for (let n in stringifiedEx) {
+  //   recipeModel.find({ id: stringifiedEx[n].id }).exec((err, res) => {
+  //     if (res.length === 0) {
+  //       let recipe = new recipeModel(stringifiedEx[n]);
+  //       console.log(recipe.title);
+  //       recipe.save();
+  //     } else {
+  //       console.log("not unique");
+  //     }
+  //   });
+  // }
+});
+
+//661531
+router.get("/:val", (req, res) => {
+  recipeModel.findOne({ id: req.params.val }).then((data) => res.send(data));
 });
 
 router.get("/", (req, res) => res.send("test"));
