@@ -1,4 +1,7 @@
 const styles = {
+  recipeList: {
+    maxHeight: "120px",
+  },
   customLogo: {
     height: "60px",
   },

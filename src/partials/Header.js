@@ -1,7 +1,8 @@
 import React from "react";
-import { Nav, Navbar } from "react-bootstrap";
+import { Navbar } from "react-bootstrap";
+//import Nav for my account
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import Account from "../Account";
+// import Account from "../Account";
 import ByIngredient from "../ByIngredient";
 import ByNutrient from "../ByNutrient";
 import RandomRecipe from "../RandomRecipe";
@@ -21,17 +22,17 @@ const Header = () => {
             alt="Meal Day Logo"
           />
         </Navbar.Brand>
-        <Nav className="ml-auto">
+        {/* <Nav className="ml-auto">
           <Nav.Link href="/account">
             <span style={styles.headerlinks}>MY ACCOUNT</span>
           </Nav.Link>
-        </Nav>
+        </Nav> */}
       </Navbar>
       <Router>
         <Switch>
-          <Route path="/account">
+          {/* <Route path="/account">
             <Account />
-          </Route>
+          </Route> */}
           <Route path="/recipe-by-ingredient">
             <ByIngredient />
           </Route>

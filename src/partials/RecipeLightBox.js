@@ -1,17 +1,22 @@
 import React, { useState } from "react";
 import { Button, Col, Image, Modal, Row, Table } from "react-bootstrap";
-import styles from "./Styles";
-import SurprisePic from "../images/Surprise.jpg";
 import Axios from "axios";
 import _ from "lodash";
+import styles from "./Styles";
 
-const RandomLightBox = (props) => {
+const RecipeLightBox = (props) => {
+  let recipeURL = "";
+  try {
+    recipeURL = "/recipes/" + props.recipeData.id;
+  } catch {
+    recipeURL = "/recipes/";
+  }
   const [rando, setRando] = useState();
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => {
-    Axios.get("/recipes/random")
+    Axios.get(recipeURL)
       .then((res) => setRando(res.data))
       .catch((err) => console.log(err))
       .then(() => setShow(true));
@@ -111,17 +116,48 @@ const RandomLightBox = (props) => {
     }
   };
 
+  const getCalories = (val) => {
+    try {
+      return val.summary
+        .substring(0, val.summary.indexOf("<a"))
+        .replaceAll("<b>", "")
+        .replaceAll("</b>", "")
+        .replaceAll(".", "")
+        .replaceAll(",", "")
+        .split(" ")[
+        val.summary
+          .substring(0, val.summary.indexOf("<a"))
+          .replaceAll("<b>", "")
+          .replaceAll("</b>", "")
+          .replaceAll(".", "")
+          .replaceAll(",", "")
+          .split(" ")
+          .indexOf("calories") - 1
+      ];
+    } catch (err) {
+      return null;
+    }
+  };
+
   return (
     <>
-      <Image
-        onClick={handleShow}
-        src={SurprisePic}
-        alt="SurpriseMe"
-        thumbnail
-        fluid
-      />
-      <h2 style={styles.setFont}>SURPRISE ME!</h2>
-      <h3 style={styles.setFont}>RECIPE OF THE DAY</h3>
+      <Col>
+        <Image
+          onClick={handleShow}
+          style={styles.recipeList}
+          alt={props.recipeData.title}
+          src={props.recipeData.image}
+        />
+      </Col>
+      <Col>
+        <Row onClick={handleShow}>{props.recipeData.title}</Row>
+        <Row>Serving Size: {props.recipeData.servings}</Row>
+        <Row>Calories per Serving: {getCalories(props.recipeData)}</Row>
+        <Row>Ready In: {props.recipeData.readyInMinutes} minutes</Row>
+        <Row>
+          <button onClick={handleShow}>Full Detail</button>
+        </Row>
+      </Col>
 
       <Modal
         //Centers
@@ -146,4 +182,4 @@ const RandomLightBox = (props) => {
     </>
   );
 };
-export default RandomLightBox;
+export default RecipeLightBox;

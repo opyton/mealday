@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Formik, Field, Form, FieldArray } from "formik";
 import { Col, Container, Row } from "react-bootstrap";
+import Axios from "axios";
 
 const ByNutrient = () => {
   const [nutrients, setNutrients] = useState([]);
@@ -17,15 +18,35 @@ const ByNutrient = () => {
 
   //will display recipes after retrieve from database
   const displayRecipes = () => {
-    return (
-      <Col>
-        {nutrients.map((nutrients) => (
-          <Col>
-            <div>{nutrients.qty}</div>
-          </Col>
-        ))}
-      </Col>
-    );
+    if (nutrients.length > 0) {
+      Axios.post("/recipes/byNutrient", nutrients);
+
+      return (
+        <Col>
+          {nutrients.map((nutrients) => (
+            <Col>
+              <div>{nutrients.minmax}</div>
+              <div>{nutrients.qty}</div>
+              <div>{nutrients.type}</div>
+              <div>{nutrients.nutrient}</div>
+            </Col>
+          ))}
+        </Col>
+      );
+    } else {
+      return (
+        <Col>
+          {nutrients.map((nutrients) => (
+            <Col>
+              <div>{nutrients.minmax}</div>
+              <div>{nutrients.qty}</div>
+              <div>{nutrients.type}</div>
+              <div>{nutrients.nutrient}</div>
+            </Col>
+          ))}
+        </Col>
+      );
+    }
   };
 
   const nutrientsForm = () => {
@@ -33,13 +54,13 @@ const ByNutrient = () => {
       <>
         <Formik
           initialValues={{
-            nutrients: [{ qty: "", type: "grams", nutrient: "" }],
+            nutrients: [
+              { minmax: "min", qty: "", type: "grams", nutrient: "" },
+            ],
           }}
-          onSubmit={(values) => {
-            setNutrients(values.nutrients);
-            console.log(values.nutrients);
-          }}
-          render={({ values }) => (
+          onSubmit={(values) => setNutrients(values.nutrients)}
+        >
+          {({ values }) => (
             <Form>
               <FieldArray
                 name="nutrients"
@@ -47,16 +68,31 @@ const ByNutrient = () => {
                   <div>
                     {values.nutrients.map((nutrient, index) => (
                       <div key={index}>
-                        <Field type="number" name={`nutrients[${index}].qty`} />
+                        <Field as="select" name={`nutrients.${index}.minmax`}>
+                          <option value="max">Maximum</option>
+                          <option value="min">Minimum</option>
+                        </Field>{" "}
+                        <Field
+                          placeholder="QTY"
+                          type="number"
+                          name={`nutrients[${index}].qty`}
+                        />{" "}
                         <Field as="select" name={`nutrients.${index}.type`}>
                           <option value="grams">grams</option>
                           <option value="oz">oz</option>
-                        </Field>
+                          <option value="lbs">lbs</option>
+                          <option value="tbsp">tbsp</option>
+                          <option value="tsps">tsps</option>
+                          <option value="quarts">quarts</option>
+                          <option value="cups">cups</option>
+                        </Field>{" "}
                         <Field
+                          placeholder="Nutrient i.e protein, carbs, etc"
                           onClick={() =>
                             values.nutrients[index].nutrient.length > 3 &&
                             !values.nutrients[index + 1]
                               ? arrayHelpers.push({
+                                  minmax: "min",
                                   qty: "",
                                   type: "grams",
                                   nutrient: "",
@@ -65,8 +101,7 @@ const ByNutrient = () => {
                           }
                           type="text"
                           name={`nutrients.${index}.nutrient`}
-                        />
-
+                        />{" "}
                         <button
                           type="button"
                           onClick={() => arrayHelpers.remove(index)}
@@ -79,6 +114,7 @@ const ByNutrient = () => {
                       type="button"
                       onClick={() =>
                         arrayHelpers.push({
+                          minmax: "min",
                           qty: "",
                           type: "grams",
                           nutrient: "",
@@ -93,7 +129,7 @@ const ByNutrient = () => {
               />
             </Form>
           )}
-        />
+        </Formik>
       </>
     );
   };
