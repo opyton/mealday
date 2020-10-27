@@ -16,16 +16,17 @@ router.post("/byNutrient", (req, res) => {
 });
 
 router.post("/byIngredient", async (req, res) => {
-  console.log(req.body);
-
-  const matchesFilter = (res) => {
+  const matchesFilter = (res, body) => {
     let found = false;
+    let foundarr = _.fill(Array(body.length), false);
     try {
       _.forEach(res.extendedIngredients, (ingredient) => {
-        if (_.includes(ingredient.name, "beef")) {
-          console.log(res.title);
-          found = true;
+        for (let x in body) {
+          if (_.includes(ingredient.name, body[x].ingredient)) {
+            foundarr[x] = true;
+          }
         }
+        if (_.every(foundarr, (n) => n === true)) found = true;
       });
     } catch (err) {
       console.log(err);
@@ -36,17 +37,14 @@ router.post("/byIngredient", async (req, res) => {
   const getFilteredRecipes = () => {
     let recipes = [];
     var recipeProm = new Promise((resolve, reject) => {
-      recipeModel
-        .find()
-        .limit(50)
-        .exec((err, response) => {
-          _.forEach(response, (response) => {
-            if (matchesFilter(response) && recipes.length < 3) {
-              recipes = _.concat(recipes, response);
-            }
-          });
-          resolve();
+      recipeModel.find().exec((err, response) => {
+        _.forEach(response, (response) => {
+          if (matchesFilter(response, req.body) && recipes.length < 100) {
+            recipes = _.concat(recipes, response);
+          }
         });
+        resolve();
+      });
     });
     recipeProm.then(() => res.send(recipes));
   };
@@ -83,9 +81,8 @@ router.get("/random", async (req, res) => {
   // }
 });
 
-//661531
-router.get("/:val", (req, res) => {
-  recipeModel.findOne({ id: req.params.val }).then((data) => res.send(data));
+router.get("/:id", (req, res) => {
+  recipeModel.findOne({ id: req.params.id }).then((data) => res.send(data));
 });
 
 router.get("/", (req, res) => res.send("test"));
