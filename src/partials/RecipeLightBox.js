@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Button, Col, Image, Modal, Row, Table } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Container,
+  Image,
+  Modal,
+  Row,
+  Table,
+} from "react-bootstrap";
 import Axios from "axios";
 import _ from "lodash";
 import styles from "./Styles";
@@ -141,23 +149,27 @@ const RecipeLightBox = (props) => {
 
   return (
     <>
-      <Col>
-        <Image
-          onClick={handleShow}
-          style={styles.recipeList}
-          alt={props.recipeData.title}
-          src={props.recipeData.image}
-        />
-      </Col>
-      <Col>
-        <Row onClick={handleShow}>{props.recipeData.title}</Row>
-        <Row>Serving Size: {props.recipeData.servings}</Row>
-        <Row>Calories per Serving: {getCalories(props.recipeData)}</Row>
-        <Row>Ready In: {props.recipeData.readyInMinutes} minutes</Row>
+      <Container>
         <Row>
-          <button onClick={handleShow}>Full Detail</button>
+          <Col>
+            <Image
+              onClick={handleShow}
+              style={styles.recipeList}
+              src={props.recipeData.image}
+              alt={props.recipeData.title}
+            />
+          </Col>
+          <Col>
+            <Row onClick={handleShow}>{props.recipeData.title}</Row>
+            <Row>Serving Size: {props.recipeData.servings}</Row>
+            <Row>Calories per Serving: {getCalories(props.recipeData)}</Row>
+            <Row>Ready In: {props.recipeData.readyInMinutes} minutes</Row>
+            <Row>
+              <button onClick={handleShow}>Full Detail</button>
+            </Row>
+          </Col>
         </Row>
-      </Col>
+      </Container>
 
       <Modal
         //Centers
