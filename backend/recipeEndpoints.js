@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 const _ = require("lodash");
 const recipeModel = require("./recipeModel");
+const ingredientListModel = require("./ingredientListModel");
 
 const randomRecipe =
   "https://api.spoonacular.com/recipes/random?apiKey=" +
@@ -50,6 +51,28 @@ router.post("/byIngredient", async (req, res) => {
   };
   getFilteredRecipes();
 });
+
+//Saves an ingredient list and stores in mongoose database
+// router.get("/ingredientList", async (req, res) => {
+//   let ingredients = [];
+//   var recipeProm = new Promise((resolve, reject) => {
+//     recipeModel.find().exec((err, response) => {
+//       _.forEach(response, (response) => {
+//         _.forEach(response.extendedIngredients, (ingredient) => {
+//           if (!_.includes(ingredients, ingredient.name)) {
+//             ingredients.push(_.capitalize(ingredient.name));
+//           }
+//         });
+//       });
+//       resolve();
+//     });
+//   });
+//   recipeProm.then(() => {
+//     let listing = new ingredientListModel({ ingredientList: ingredients });
+//     console.log(listing);
+//     listing.save();
+//   });
+// });
 
 router.get("/random", async (req, res) => {
   //Random Recipe send to frontend
