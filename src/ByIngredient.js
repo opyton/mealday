@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Formik, Field, Form, FieldArray } from "formik";
+import { Formik, Form, FieldArray } from "formik";
 import { Col, Container, Row } from "react-bootstrap";
 import Axios from "axios";
 import RecipeLightBox from "./partials/RecipeLightBox";
 import _ from "lodash";
+import { TextField } from "@material-ui/core";
+import { Autocomplete } from "@material-ui/lab";
 
 const ByIngredient = () => {
   const [recipes, setRecipes] = useState([]);
@@ -31,7 +33,6 @@ const ByIngredient = () => {
       if (recipes[0].length > 0) {
         return (
           <>
-            {GenerateRecipeList()}
             {_.map(
               numBoxesGenerator(_.flatMap(recipes, (x) => x).length),
               (n) => {
@@ -49,6 +50,7 @@ const ByIngredient = () => {
                 }
               }
             )}
+            {GenerateRecipeList()}
           </>
         );
       } else {
@@ -77,15 +79,49 @@ const ByIngredient = () => {
     });
   };
   const ingredientsForm = () => {
+    const top100Ingredients = [
+      "Olive oil",
+      "Tomato",
+      "Flour",
+      "Butter",
+      "Chicken",
+      "Sugar",
+      "Salt",
+      "Egg",
+      "Rice",
+      "Vegetable oil",
+      "Pork",
+      "Beef",
+      "Cheese",
+      "Garlic",
+      "Orange",
+      "Turkey",
+      "Onion",
+      "Corn",
+      "Milk",
+      "Mayonnaise",
+      "Chile",
+      "Almond",
+      "Bacon",
+      "Mushroom",
+      "Coconut",
+      "Beet",
+      "Strawberries",
+      "Fennel",
+      "Lamb",
+      "Apple",
+      "Shrimp",
+    ];
     return (
       <>
         <Formik
           initialValues={{
             ingredients: [{ ingredient: "" }],
           }}
+          // onSubmit={(values) => console.log(values)}
           onSubmit={(values) => handleSubmit(values)}
         >
-          {({ values }) => (
+          {({ setFieldValue, values }) => (
             <Form>
               <FieldArray
                 name="ingredients"
@@ -93,7 +129,39 @@ const ByIngredient = () => {
                   <div>
                     {values.ingredients.map((ingredient, index) => (
                       <div key={index}>
-                        <Field
+                        <Autocomplete
+                          id="combo-box-demo"
+                          options={top100Ingredients}
+                          onClick={() =>
+                            !values.ingredients[index + 1]
+                              ? arrayHelpers.push({
+                                  ingredient: "",
+                                })
+                              : null
+                          }
+                          onChange={(e, value) => {
+                            if (!values.ingredients[index + 1])
+                              arrayHelpers.push({
+                                ingredient: "",
+                              });
+
+                            setFieldValue(
+                              `ingredients.${index}.ingredient`,
+                              _.lowerCase(value)
+                            );
+                          }}
+                          getOptionLabel={(option) => option}
+                          // getOptionLabel={(option) => option.title}
+                          style={{ width: 300 }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="Ingredient i.e. tomato, chicken, etc"
+                              variant="outlined"
+                            />
+                          )}
+                        />
+                        {/* <Field
                           placeholder="INGREDIENT i.e. tomato, chicken, etc"
                           onClick={() =>
                             values.ingredients[index].ingredient.length > 3 &&
@@ -104,14 +172,14 @@ const ByIngredient = () => {
                               : null
                           }
                           type="text"
-                          name={`ingredients.${index}.ingredient`}
-                        />{" "}
-                        <button
+                          name={`ingredients.${index}.ingredient1`}
+                        />{" "} */}
+                        {/* <button
                           type="button"
                           onClick={() => arrayHelpers.remove(index)}
                         >
                           X
-                        </button>
+                        </button> */}
                       </div>
                     ))}
                     <button

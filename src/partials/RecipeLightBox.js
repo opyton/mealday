@@ -11,6 +11,7 @@ import {
 import Axios from "axios";
 import _ from "lodash";
 import styles from "./Styles";
+import MealDayLogo from "../images/Mealday-logo.png";
 
 const RecipeLightBox = (props) => {
   let recipeURL = "";
@@ -155,7 +156,7 @@ const RecipeLightBox = (props) => {
             <Image
               onClick={handleShow}
               style={styles.recipeList}
-              src={props.recipeData.image}
+              src={props.recipeData.image || MealDayLogo}
               alt={props.recipeData.title}
             />
           </Col>
