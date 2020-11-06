@@ -1,24 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form, FieldArray } from "formik";
-import { Col, Container, Row } from "react-bootstrap";
+import { Col, Container, Row, Spinner } from "react-bootstrap";
 import Axios from "axios";
 import RecipeLightBox from "./partials/RecipeLightBox";
 import _ from "lodash";
 import { TextField } from "@material-ui/core";
 import { Autocomplete } from "@material-ui/lab";
+import styles from "./partials/Styles";
 
 const ByIngredient = () => {
   const [recipes, setRecipes] = useState([]);
   const [whichRecipes, setWhichRecipes] = useState(1);
+  const [ingredientList, setIngredientList] = useState();
+  const [queryMade, setQueryMade] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    Axios.get("/recipes/ingredientList").then((res) =>
+      setIngredientList(_.uniq(res.data.ingredientList))
+    );
+  }, []);
 
   //will display recipes after retrieve from database
   const displayRecipes = () => {
     const GenerateRecipeList = () => {
       return _.map(recipes[whichRecipes - 1], (data) => {
         return (
-          <Row>
-            <RecipeLightBox recipeData={data} />
-          </Row>
+          <>
+            <Row>
+              <br></br>
+            </Row>
+            <Row>
+              <RecipeLightBox recipeData={data} />
+            </Row>
+          </>
         );
       });
     };
@@ -31,6 +46,19 @@ const ByIngredient = () => {
     };
     try {
       if (recipes[0].length > 0) {
+        if (loading) {
+          return (
+            <div style={{ textAlign: "center" }}>
+              <Spinner
+                style={{ color: "#37b34a" }}
+                animation="border"
+                role="status"
+              >
+                <span className="sr-only">Loading...</span>
+              </Spinner>
+            </div>
+          );
+        }
         return (
           <>
             {_.map(
@@ -40,7 +68,10 @@ const ByIngredient = () => {
                   return (
                     <>
                       {" "}
-                      <button onClick={() => setWhichRecipes(n)}>
+                      <button
+                        style={styles.numBoxes}
+                        onClick={() => setWhichRecipes(n)}
+                      >
                         {n}
                       </button>{" "}
                     </>
@@ -53,65 +84,46 @@ const ByIngredient = () => {
             {GenerateRecipeList()}
           </>
         );
-      } else {
+      }
+    } catch {
+      if (loading) {
+        return (
+          <div style={{ textAlign: "center" }}>
+            <Spinner
+              style={{ color: "#37b34a" }}
+              animation="border"
+              role="status"
+            >
+              <span className="sr-only">Loading...</span>
+            </Spinner>
+          </div>
+        );
+      }
+      if (queryMade) {
         return (
           <Col>
-            <Col>
-              <h3>Error Please enter a valid item</h3>
+            <Col style={{ color: "red", fontWeight: "bold" }}>
+              No recipes found: please select different ingredients!
             </Col>
           </Col>
         );
       }
-    } catch {
-      return (
-        <Col>
-          <Col>
-            <h3>Please enter at least one data point</h3>
-          </Col>
-        </Col>
-      );
     }
   };
 
   const handleSubmit = (values) => {
-    Axios.post("/recipes/byIngredient", values.ingredients).then((res) => {
-      setRecipes(_.chunk(res.data, 5));
-    });
+    setLoading(true);
+    Axios.post("/recipes/byIngredient", values.ingredients)
+      .then((res) => {
+        setRecipes(_.chunk(res.data, 4));
+      })
+      .then(() => {
+        setWhichRecipes(1);
+        setQueryMade(true);
+        setLoading(false);
+      });
   };
-  const ingredientsForm = () => {
-    const top100Ingredients = [
-      "Olive oil",
-      "Tomato",
-      "Flour",
-      "Butter",
-      "Chicken",
-      "Sugar",
-      "Salt",
-      "Egg",
-      "Rice",
-      "Vegetable oil",
-      "Pork",
-      "Beef",
-      "Cheese",
-      "Garlic",
-      "Orange",
-      "Turkey",
-      "Onion",
-      "Corn",
-      "Milk",
-      "Mayonnaise",
-      "Chile",
-      "Almond",
-      "Bacon",
-      "Mushroom",
-      "Coconut",
-      "Beet",
-      "Strawberries",
-      "Fennel",
-      "Lamb",
-      "Apple",
-      "Shrimp",
-    ];
+  const ingredientsForm = (ingredientArr) => {
     return (
       <>
         <Formik
@@ -129,9 +141,11 @@ const ByIngredient = () => {
                   <div>
                     {values.ingredients.map((ingredient, index) => (
                       <div key={index}>
+                        <br />
                         <Autocomplete
+                          name={`ingredients.${index}`}
                           id="combo-box-demo"
-                          options={top100Ingredients}
+                          options={ingredientArr}
                           onClick={() =>
                             !values.ingredients[index + 1]
                               ? arrayHelpers.push({
@@ -140,6 +154,14 @@ const ByIngredient = () => {
                               : null
                           }
                           onChange={(e, value) => {
+                            try {
+                              if (e.currentTarget.title === "Clear") {
+                                console.log(arrayHelpers);
+                                arrayHelpers.remove(index);
+                              }
+                            } catch {
+                              console.log("caught");
+                            }
                             if (!values.ingredients[index + 1])
                               arrayHelpers.push({
                                 ingredient: "",
@@ -151,38 +173,18 @@ const ByIngredient = () => {
                             );
                           }}
                           getOptionLabel={(option) => option}
-                          // getOptionLabel={(option) => option.title}
-                          style={{ width: 300 }}
+                          // style={{ width: 300 }}
                           renderInput={(params) => (
                             <TextField
                               {...params}
-                              label="Ingredient i.e. tomato, chicken, etc"
-                              variant="outlined"
+                              label="Ingredient"
+                              variant="standard"
                             />
                           )}
                         />
-                        {/* <Field
-                          placeholder="INGREDIENT i.e. tomato, chicken, etc"
-                          onClick={() =>
-                            values.ingredients[index].ingredient.length > 3 &&
-                            !values.ingredients[index + 1]
-                              ? arrayHelpers.push({
-                                  ingredient: "",
-                                })
-                              : null
-                          }
-                          type="text"
-                          name={`ingredients.${index}.ingredient1`}
-                        />{" "} */}
-                        {/* <button
-                          type="button"
-                          onClick={() => arrayHelpers.remove(index)}
-                        >
-                          X
-                        </button> */}
                       </div>
                     ))}
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() =>
                         arrayHelpers.push({
@@ -191,8 +193,15 @@ const ByIngredient = () => {
                       }
                     >
                       Add
+                    </button> */}
+                    <br></br>
+                    <button
+                      class="float-left"
+                      style={styles.findMyRecipes}
+                      type="submit"
+                    >
+                      Find My Recipes
                     </button>
-                    <button type="submit">Find My Recipes</button>
                   </div>
                 )}
               />
@@ -207,8 +216,12 @@ const ByIngredient = () => {
     <>
       <Container>
         <Row>
-          <Col>{ingredientsForm()}</Col>
-          <Col>{displayRecipes()}</Col>
+          <Col className="mx-auto" xs={8} md={5}>
+            {ingredientsForm(ingredientList)}
+          </Col>
+          <Col xs={8} md={5}>
+            {displayRecipes()}
+          </Col>
         </Row>
       </Container>
     </>

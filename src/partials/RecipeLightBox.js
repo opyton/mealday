@@ -36,22 +36,15 @@ const RecipeLightBox = (props) => {
       _.map(rando.analyzedInstructions[0].steps, (n) => (
         <li key={n.number}>{n.step}</li>
       ));
-    const IngredientsLift = () => {
-      return (
-        <>
-          <Table responsive>
-            <thead>Ingredients</thead>
-            {_.map(rando.extendedIngredients, (n) => (
-              <tr key={n.name}>
-                <td>{_.capitalize(n.name)}</td>
-                <td> {n.amount}</td>
-                <td>{n.unit}</td>
-              </tr>
-            ))}
-          </Table>
-        </>
-      );
-    };
+    const IngredientsList = () =>
+      _.map(rando.extendedIngredients, (n) => (
+        <tr key={n.name}>
+          <td>{_.capitalize(n.name)}</td>
+          <td>
+            {_.round(n.amount, 2)} {n.unit}
+          </td>
+        </tr>
+      ));
     const getCalories = () =>
       rando.summary
         .substring(0, rando.summary.indexOf("<a"))
@@ -75,21 +68,28 @@ const RecipeLightBox = (props) => {
           <Modal.Header closeButton></Modal.Header>
           <Modal.Body>
             <Row>
-              <Col md="auto">
+              <Col md="auto" style={styles.leftModalColumnStyling}>
                 <Image
                   style={{ maxHeight: "200px", maxWidth: "auto" }}
                   src={rando.image}
                 />
-                <Row>Serving Size: {rando.servings}</Row>
-                <Row>Calories per Serving: {getCalories()}</Row>
-                <Row>Ready In: {rando.readyInMinutes} minutes</Row>
-                {IngredientsLift()}
+                <Table responsive borderless>
+                  <thead>Serving Size: {rando.servings}</thead>
+                  <thead>Calories per Serving: {getCalories()}</thead>
+                  <thead>Ready In: {rando.readyInMinutes} minutes</thead>
+                  <br></br>
+                  <tr style={styles.leftModalColumnTitleStyling}>
+                    <td>Ingredients</td>
+                  </tr>
+                  <tbody>{IngredientsList()}</tbody>
+                </Table>
               </Col>
               <Col>
                 <Row>
-                  <h2>{rando.title}</h2>
+                  <h2 style={styles.modalTitle}>{rando.title}</h2>
                 </Row>
                 <Row
+                  className="mr-3"
                   style={{
                     maxHeight: "400px",
                     maxWidth: "auto",
@@ -101,7 +101,7 @@ const RecipeLightBox = (props) => {
                     .replaceAll("</b>", "")
                     .replace("spoonacular", "Meal Day")}
                 </Row>
-                <Row>
+                <Row className="mr-3">
                   <h3>Directions</h3>
                   <ol>{displayInstructions()}</ol>
                 </Row>
@@ -150,7 +150,7 @@ const RecipeLightBox = (props) => {
 
   return (
     <>
-      <Container>
+      <Container style={styles.summaryBoxStyling}>
         <Row>
           <Col>
             <Image
@@ -161,12 +161,16 @@ const RecipeLightBox = (props) => {
             />
           </Col>
           <Col>
-            <Row onClick={handleShow}>{props.recipeData.title}</Row>
+            <Row style={styles.summaryTitleStyling} onClick={handleShow}>
+              {props.recipeData.title}
+            </Row>
             <Row>Serving Size: {props.recipeData.servings}</Row>
             <Row>Calories per Serving: {getCalories(props.recipeData)}</Row>
             <Row>Ready In: {props.recipeData.readyInMinutes} minutes</Row>
             <Row>
-              <button onClick={handleShow}>Full Detail</button>
+              <button style={styles.fullDetailBtn} onClick={handleShow}>
+                Full Detail
+              </button>
             </Row>
           </Col>
         </Row>

@@ -18,26 +18,25 @@ const RandomLightBox = (props) => {
   };
 
   const modalDisplay = (loaded) => {
-    const displayInstructions = () =>
-      _.map(rando.analyzedInstructions[0].steps, (n) => (
-        <li key={n.number}>{n.step}</li>
-      ));
-    const IngredientsLift = () => {
-      return (
-        <>
-          <Table responsive>
-            <thead>Ingredients</thead>
-            {_.map(rando.extendedIngredients, (n) => (
-              <tr key={n.name}>
-                <td>{_.capitalize(n.name)}</td>
-                <td> {n.amount}</td>
-                <td>{n.unit}</td>
-              </tr>
-            ))}
-          </Table>
-        </>
-      );
+    const displayInstructions = () => {
+      try {
+        return _.map(rando.analyzedInstructions[0].steps, (n) => (
+          <li key={n.number}>{n.step}</li>
+        ));
+      } catch {
+        return null;
+      }
     };
+
+    const IngredientsList = () =>
+      _.map(rando.extendedIngredients, (n) => (
+        <tr key={n.name}>
+          <td>{_.capitalize(n.name)}</td>
+          <td>
+            {_.round(n.amount, 2)} {n.unit}
+          </td>
+        </tr>
+      ));
     const getCalories = () =>
       rando.summary
         .substring(0, rando.summary.indexOf("<a"))
@@ -61,21 +60,28 @@ const RandomLightBox = (props) => {
           <Modal.Header closeButton></Modal.Header>
           <Modal.Body>
             <Row>
-              <Col md="auto">
+              <Col md="auto" style={styles.leftModalColumnStyling}>
                 <Image
                   style={{ maxHeight: "200px", maxWidth: "auto" }}
                   src={rando.image}
                 />
-                <Row>Serving Size: {rando.servings}</Row>
-                <Row>Calories per Serving: {getCalories()}</Row>
-                <Row>Ready In: {rando.readyInMinutes} minutes</Row>
-                {IngredientsLift()}
+                <Table responsive borderless>
+                  <thead>Serving Size: {rando.servings}</thead>
+                  <thead>Calories per Serving: {getCalories()}</thead>
+                  <thead>Ready In: {rando.readyInMinutes} minutes</thead>
+                  <br></br>
+                  <tr style={styles.leftModalColumnTitleStyling}>
+                    <td>Ingredients</td>
+                  </tr>
+                  <tbody>{IngredientsList()}</tbody>
+                </Table>
               </Col>
               <Col>
                 <Row>
-                  <h2>{rando.title}</h2>
+                  <h2 style={styles.modalTitle}>{rando.title}</h2>
                 </Row>
                 <Row
+                  className="mr-3"
                   style={{
                     maxHeight: "400px",
                     maxWidth: "auto",
@@ -87,7 +93,7 @@ const RandomLightBox = (props) => {
                     .replaceAll("</b>", "")
                     .replace("spoonacular", "Meal Day")}
                 </Row>
-                <Row>
+                <Row className="mr-3">
                   <h3>Directions</h3>
                   <ol>{displayInstructions()}</ol>
                 </Row>
@@ -114,14 +120,18 @@ const RandomLightBox = (props) => {
   return (
     <>
       <Image
+        style={styles.imageAdjust}
         onClick={handleShow}
         src={SurprisePic}
         alt="SurpriseMe"
-        thumbnail
+        rounded
         fluid
       />
-      <h2 style={styles.setFont}>SURPRISE ME!</h2>
-      <h3 style={styles.setFont}>RECIPE OF THE DAY</h3>
+      <div onClick={handleShow} style={styles.centerTexts}>
+        <h2 style={styles.setFont}>
+          SURPRISE ME!<br></br>RECIPE OF THE DAY
+        </h2>
+      </div>
 
       <Modal
         //Centers
