@@ -1,3 +1,6 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
 const express = require("express");
 const router = express.Router();
 const axios = require("axios");
@@ -8,7 +11,7 @@ const ingredientListModel = require("./ingredientListModel");
 const randomRecipe =
   "https://api.spoonacular.com/recipes/random?apiKey=" +
   process.env.API_KEY +
-  "&number=5";
+  "&number=50";
 
 router.post("/byNutrient", (req, res) => {
   console.log("in nutrient");
@@ -52,8 +55,8 @@ router.post("/byIngredient", async (req, res) => {
   getFilteredRecipes();
 });
 
-//Saves an ingredient list and stores in mongoose database
-// router.get("/ingredientList", async (req, res) => {
+// Saves an ingredient list and stores in mongoose database
+// router.post("/ingredientList", async (req, res) => {
 //   let ingredients = [];
 //   var recipeProm = new Promise((resolve, reject) => {
 //     recipeModel.find().exec((err, response) => {
@@ -74,6 +77,42 @@ router.post("/byIngredient", async (req, res) => {
 //   });
 // });
 
+router.get("/ingredientList", async (req, res) => {
+  const id = process.env.INGREDIENT_LIST_ID;
+  ingredientListModel.findById(id).exec((err, result) => {
+    res.send(result);
+  });
+});
+
+router.post("/sde", async (req, res) => {
+  try {
+    if (
+      req.body.user === process.env.SDE_USER &&
+      req.body.password === process.env.SDE_PSWD
+    ) {
+      const stringifiedEx = await axios
+        .get(randomRecipe)
+        .then((response) => response.data.recipes);
+      for (let n in stringifiedEx) {
+        recipeModel.find({ id: stringifiedEx[n].id }).exec((err, res) => {
+          if (res.length === 0) {
+            let recipe = new recipeModel(stringifiedEx[n]);
+            console.log(recipe.title);
+            recipe.save();
+          } else {
+            console.log("not unique");
+          }
+        });
+      }
+      res.status(200).json({ message: "success!" });
+    } else {
+      res.status(401).json({ message: "error incorrect password or username" });
+    }
+  } catch {
+    res.status(400).json({ message: "error" });
+  }
+});
+
 router.get("/random", async (req, res) => {
   //Random Recipe send to frontend
   recipeModel.countDocuments().exec((err, count) => {
@@ -86,22 +125,6 @@ router.get("/random", async (req, res) => {
         res.send(result);
       });
   });
-
-  //Storing data from api
-  // const stringifiedEx = await axios
-  //   .get(randomRecipe)
-  //   .then((response) => response.data.recipes);
-  // for (let n in stringifiedEx) {
-  //   recipeModel.find({ id: stringifiedEx[n].id }).exec((err, res) => {
-  //     if (res.length === 0) {
-  //       let recipe = new recipeModel(stringifiedEx[n]);
-  //       console.log(recipe.title);
-  //       recipe.save();
-  //     } else {
-  //       console.log("not unique");
-  //     }
-  //   });
-  // }
 });
 
 router.get("/:id", (req, res) => {
